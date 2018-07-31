@@ -57,6 +57,29 @@
 
 		<canvas id="cc"></canvas>
 		<script>
+			// 渲染器
+			let render = new THREE.WebGLRenderer({
+				canvas:document,querySelector("#cc"),
+				antialias: true
+			})
+			render:setSize(window.innerWidth,window.innerHeigh)
+			render:setClearColor(0xa0a0a0)
+			render:shadowMap.enabled = true
+
+			// 场景
+			let scene = new THREE.Scene()
+			scene.fog = new THREE.Fog(0xa0a0a0, 200, 2000) // 雾化
+
+			// 相机
+			let camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeigh, 1, 2000)
+			camera.position.set(100, 200, 300);
+
+			// 动画控制器
+			let c = new THREE.OrbitControls(camera, document.querySelector('#cc'))
+			c.update();
+
+			// 05:39
+
 		</script>
 
 	</body>
