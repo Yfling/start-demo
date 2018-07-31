@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<title>three.js webgl - box</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #000;
+				color: #fff;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			#info {
+				color: #fff;
+				position: absolute;
+				top: 10px;
+				width: 100%;
+				text-align: center;
+				z-index: 100;
+				display: block;
+			}
+
+			#info a {
+				color: #046;
+				font-weight: bold;
+			}
+		</style>
+
+		<script src="build/three.js"></script>
+
+		<script src="js/libs/inflate.min.js"></script>
+		<script src="js/loaders/FBXLoader.js"></script>
+
+		<script src="js/controls/OrbitControls.js"></script>
+
+
+		<script src="js/libs/stats.min.js"></script>
+	</head>
+
+	<body>
+		<div id="info">
+
+			<button id="reset">重置</button>
+
+			<button id="next">帧数累加</button>
+
+			<button id="degL">click左转180</button>
+
+			<button id="toggle">切换材质</button>
+
+			<button id="run">running</button>
+		</div>
+
+		<canvas id="cc"></canvas>
+		<script>
+		</script>
+
+	</body>
+
+</html>
