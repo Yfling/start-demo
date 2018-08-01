@@ -58,13 +58,13 @@
 		<canvas id="cc"></canvas>
 		<script>
 			// 渲染器
-			let render = new THREE.WebGLRenderer({
-				canvas:document,querySelector("#cc"),
+			let renderer = new THREE.WebGLRenderer({
+				canvas:document.querySelector("#cc"),
 				antialias: true
 			})
-			render:setSize(window.innerWidth,window.innerHeigh)
-			render:setClearColor(0xa0a0a0)
-			render:shadowMap.enabled = true
+			renderer.setSize(window.innerWidth,window.innerHeigh)
+			renderer.setClearColor(0xa0a0a0)
+			renderer.shadowMap.enabled = true
 
 			// 场景
 			let scene = new THREE.Scene()
@@ -78,8 +78,48 @@
 			let c = new THREE.OrbitControls(camera, document.querySelector('#cc'))
 			c.update();
 
-			// 05:39
+			// 光线
+			let light = new THREE.HemisphereLight(0xffffff,0x444444)
+			light.position.set(0, 200, 0)
+			scene.add(light)
 
+			let Dlight = new THREE.DirectionalLight(0xffffff, 0.8)
+			Dlight.position.set(0, 200, 100)
+			Dlight.castShadow = true
+
+			Dlight.shadow.camera.top = 180
+			Dlight.shadow.camera.bottom = -100
+			Dlight.shadow.camera.left = -120
+			Dlight.shadow.camera.right = 120
+
+			scene.add(Dlight)
+			scene.add(new THREE.CameraHelper(Dlight.shadow.camera))
+
+			let grid = new THREE.GridHelper(2000, 10, 0xFFC0CB, 0xc71585)
+			scene.add(grid)
+
+			let groundMap = new THREE.TextureLoader().load('http://m.qpic.cn/psb?/V13So6mE0zOx6X/kBdrqpDV4k1N7OLQpQk*UcIitjQjb7yhd7wN1ajZW.s!/b/dFcAAAAAAAAA&bo=AAIAAgAAAAARBzA!&rf=viewer_4')
+			groundMap.wrapS= groundMap.wrapT = THREE.RepeatWrapping
+			groundMap.repeat.set(16, 16)
+			let ground = new THREE.Mesh(new THREE.PlaneBufferGeometry(2000, 2000), new THREE.MeshPhongMaterial({map: groundMap}))
+			ground.receiveShadow = true
+			ground.position.set(0, -1, 0)
+			ground.rotation.x = Math.PI/2
+
+			// add box
+			let box = new THREE.Mesh(new THREE.BoxGeometry(20,20,20), new THREE.MeshBasicMaterial({color: 0x6495ED}))
+			box.castShadow = true
+			box.position.y = 50
+			scene.add(box)
+
+			scene.add(ground)
+
+			draw();
+			function draw() {
+				requestAnimationFrame(draw)
+				box.rotation.x += 0.01
+				renderer.render(scene, camera)
+			}
 		</script>
 
 	</body>
