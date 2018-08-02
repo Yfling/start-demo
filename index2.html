@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<title>three.js webgl - box</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #000;
+				color: #fff;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			#info {
+				color: #fff;
+				position: absolute;
+				top: 10px;
+				width: 100%;
+				text-align: center;
+				z-index: 100;
+				display: block;
+			}
+
+			#info a {
+				color: #046;
+				font-weight: bold;
+			}
+		</style>
+
+		<script src="build/three.js"></script>
+
+		<script src="js/libs/inflate.min.js"></script>
+		<script src="js/loaders/FBXLoader.js"></script>
+
+		<script src="js/controls/OrbitControls.js"></script>
+
+
+		<script src="js/libs/stats.min.js"></script>
+	</head>
+
+	<body>
+		<div id="info">
+
+			<button id="reset">重置</button>
+
+			<button id="next">帧数累加</button>
+
+			<button id="degL">click左转180</button>
+
+			<button id="toggle">切换材质</button>
+
+			<button id="run">running</button>
+		</div>
+
+		<canvas id="cc"></canvas>
+		<script>
+			// 渲染器
+			let renderer = new THREE.WebGLRenderer({
+				canvas:document.querySelector("#cc"),
+				antialias: true
+			})
+			renderer.setSize(window.innerWidth,window.innerHeight)
+			renderer.setClearColor(0xa0a0a0)
+			renderer.shadowMap.enabled = true
+
+			// 场景
+			let scene = new THREE.Scene()
+			scene.fog = new THREE.Fog(0xa0a0a0, 200, 1000);//场景加入雾化，200 - 1000的距离衰变雾化
+
+			// 相机
+			let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+			camera.position.set(100, 200, 300);//相机位置
+
+			let clock = new THREE.Clock()
+
+			// 动画控制器
+			let c = new THREE.OrbitControls(camera, document.querySelector('#cc'))
+			c.update();
+
+			// 光线
+			let light = new THREE.HemisphereLight(0xffffff,0x444444)
+			light.position.set(0, 200, 0)
+			scene.add(light)
+
+			let Dlight = new THREE.DirectionalLight(0xffffff, 0.8)
+			Dlight.position.set(0, 200, 100)
+			Dlight.castShadow = true
+
+			Dlight.shadow.camera.top = 180
+			Dlight.shadow.camera.bottom = -100
+			Dlight.shadow.camera.left = -120
+			Dlight.shadow.camera.right = 120
+
+			scene.add(Dlight)
+			scene.add(new THREE.CameraHelper(Dlight.shadow.camera))
+
+			let grid = new THREE.GridHelper(2000, 10, 0xFFC0CB, 0xc71585)
+			scene.add(grid)
+
+			let groundMap = new THREE.TextureLoader().load('http://m.qpic.cn/psb?/V13So6mE0zOx6X/kBdrqpDV4k1N7OLQpQk*UcIitjQjb7yhd7wN1ajZW.s!/b/dFcAAAAAAAAA&bo=AAIAAgAAAAARBzA!&rf=viewer_4')
+			groundMap.wrapS= groundMap.wrapT = THREE.RepeatWrapping
+			groundMap.repeat.set(16, 16)
+			let ground = new THREE.Mesh(new THREE.PlaneBufferGeometry(2000, 2000), new THREE.MeshPhongMaterial({map: groundMap}))
+			ground.receiveShadow = true
+			ground.position.set(0, -1, 0)
+			ground.rotation.x = Math.PI/2
+
+			// add box
+			// let box = new THREE.Mesh(new THREE.BoxGeometry(20,20,20), new THREE.MeshBasicMaterial({color: 0x6495ED}))
+			// box.castShadow = true
+			// box.position.y = 50
+			// scene.add(box)
+			scene.add(ground)
+			let box, allDuration, timerLayer;
+			draw();
+			function draw() {
+				requestAnimationFrame(draw)
+
+				if (box) {
+					box.mixer.update(clock.getDelta())
+				}
+
+				renderer.render(scene, camera)
+			}
+
+			function loadFbx() {
+				let loader = new THREE.FBXLoader()
+				loader.load('fbx/ys.fbx', (object)=>{  // 动画播放器处理模型动画
+					let animation = object.animation[0]
+					allDuration = animation.duration
+					timerLayer = allDuration/animation.tracks.length  // 总时长初一动画轨迹数组
+					action = object.mixer.clipAction(animation)  // 关键帧轨迹
+					object.traverse((e) => {
+						if(e.isMesh) {
+							e.castShadow =  true
+							e.receiveShadow = true
+						}
+					})
+					box = object
+					scene.add(object)
+					domClick()
+				})
+			}
+
+		function domClick() {
+			let timer, time = 0;
+			// 帧数累加
+			document.querySelector('#next').addEventListener('click', () => {
+				if (time < allDuration) {
+					time += timerLayer
+				}
+				else {
+					time = allDuration
+				}
+
+				action.reset().fadeIn(.25).play()
+				if (timer) {
+					clearTimeout(timer)
+				}
+				timer = setTimeout(() => {
+					action.paused = true
+				}, time * 1000 - 10)
+			})
+
+
+			// 重置
+			document.querySelector("#reset").addEventListener('click', ()=> {
+				if (action.paused) {
+					action.fadeOut(allDuration).play()
+				}
+			})
+		}
+
+		// 旋转
+		document.querySelector("#degL").addEventListener("click", () => {
+			let timer;
+			let rotationNow = box.rotation.y;
+			if (timer) {
+				clearInterval(timer)
+			}
+			timer = setInterval(()=> {
+				box.rotation.y += Math.PI/180
+				if (box.rotation.y > rotationNow + Math.PI) {
+					clearInterval(timer)
+				}
+			}, 14)
+		})
+
+		</script>
+
+	</body>
+
+</html>
