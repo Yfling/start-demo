@@ -62,17 +62,17 @@
 				canvas:document.querySelector("#cc"),
 				antialias: true
 			})
-			renderer.setSize(window.innerWidth,window.innerHeigh)
+			renderer.setSize(window.innerWidth,window.innerHeight)
 			renderer.setClearColor(0xa0a0a0)
 			renderer.shadowMap.enabled = true
 
 			// 场景
 			let scene = new THREE.Scene()
-			scene.fog = new THREE.Fog(0xa0a0a0, 200, 2000) // 雾化
+			scene.fog = new THREE.Fog(0xa0a0a0, 200, 1000);//场景加入雾化，200 - 1000的距离衰变雾化
 
 			// 相机
-			let camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeigh, 1, 2000)
-			camera.position.set(100, 200, 300);
+			let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+			camera.position.set(100, 200, 300);//相机位置
 
 			// 动画控制器
 			let c = new THREE.OrbitControls(camera, document.querySelector('#cc'))
